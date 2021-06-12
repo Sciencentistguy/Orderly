@@ -1,6 +1,6 @@
-package io.github.prospector.orderly.mixin;
+package xyx.quigley.orderly.mixin;
 
-import io.github.prospector.orderly.HealthBarRenderer;
+import xyx.quigley.orderly.HealthBarRenderer;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.GameRenderer;

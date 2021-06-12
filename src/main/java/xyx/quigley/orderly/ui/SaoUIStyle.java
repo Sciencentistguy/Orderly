@@ -1,6 +1,6 @@
-package io.github.prospector.orderly.ui;
+package xyx.quigley.orderly.ui;
 
-import io.github.prospector.orderly.api.config.OrderlyConfig;
+import xyx.quigley.orderly.api.config.OrderlyConfig;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;

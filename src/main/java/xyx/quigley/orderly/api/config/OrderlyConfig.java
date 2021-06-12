@@ -1,4 +1,4 @@
-package io.github.prospector.orderly.api.config;
+package xyx.quigley.orderly.api.config;
 
 import java.util.Set;
 

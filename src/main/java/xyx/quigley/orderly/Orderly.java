@@ -1,9 +1,9 @@
-package io.github.prospector.orderly;
+package xyx.quigley.orderly;
 
-import io.github.prospector.orderly.api.UIManager;
-import io.github.prospector.orderly.config.OrderlyConfigManager;
-import io.github.prospector.orderly.ui.DefaultUIStyle;
-import io.github.prospector.orderly.ui.SaoUIStyle;
+import xyx.quigley.orderly.api.UIManager;
+import xyx.quigley.orderly.config.OrderlyConfigManager;
+import xyx.quigley.orderly.ui.DefaultUIStyle;
+import xyx.quigley.orderly.ui.SaoUIStyle;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.FabricKeyBinding;
 import net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry;

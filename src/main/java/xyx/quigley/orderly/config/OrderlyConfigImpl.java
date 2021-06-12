@@ -1,10 +1,10 @@
-package io.github.prospector.orderly.config;
+package xyx.quigley.orderly.config;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.annotations.SerializedName;
-import io.github.prospector.orderly.Orderly;
-import io.github.prospector.orderly.api.config.OrderlyConfig;
+import xyx.quigley.orderly.Orderly;
+import xyx.quigley.orderly.api.config.OrderlyConfig;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.minecraft.client.gui.screen.Screen;

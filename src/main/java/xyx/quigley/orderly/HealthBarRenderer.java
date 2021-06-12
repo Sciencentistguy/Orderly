@@ -1,18 +1,16 @@
-package io.github.prospector.orderly;
+package xyx.quigley.orderly;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.mojang.blaze3d.systems.RenderSystem;
-import io.github.prospector.orderly.util.RenderUtil;
-import io.github.prospector.orderly.api.UIManager;
-import io.github.prospector.orderly.api.UIStyle;
-import io.github.prospector.orderly.api.config.OrderlyConfig;
-import io.github.prospector.orderly.config.OrderlyConfigManager;
+import org.lwjgl.opengl.GL;
+import xyx.quigley.orderly.util.RenderUtil;
+import xyx.quigley.orderly.api.UIManager;
+import xyx.quigley.orderly.api.UIStyle;
+import xyx.quigley.orderly.api.config.OrderlyConfig;
+import xyx.quigley.orderly.config.OrderlyConfigManager;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.Frustum;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.*;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -24,7 +22,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.RayTraceContext;
+import net.minecraft.world.RaycastContext;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
@@ -35,31 +33,40 @@ import java.util.stream.StreamSupport;
 
 public class HealthBarRenderer {
 
-    public static void render(MatrixStack matrices, float partialTicks, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f projection, Frustum capturedFrustum) {
+    public static void render(MatrixStack matrices, float partialTicks, Camera camera,
+                              GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager,
+                              Matrix4f projection, Frustum capturedFrustum) {
         MinecraftClient mc = MinecraftClient.getInstance();
         OrderlyConfig config = OrderlyConfigManager.getConfig();
-        if(mc.world == null || (!config.canRenderInF1() && !MinecraftClient.isHudEnabled()) || !config.canDraw()) {
+        if (mc.world == null || (!config.canRenderInF1() && !MinecraftClient.isHudEnabled()) || !config.canDraw()) {
             return;
         }
         final Entity cameraEntity = camera.getFocusedEntity() != null ? camera.getFocusedEntity() : mc.player; //possible fix for optifine (see https://github.com/UpcraftLP/Orderly/issues/3)
         assert cameraEntity != null : "Camera Entity must not be null!";
-        if(config.showingOnlyFocused()) {
+        if (config.showingOnlyFocused()) {
             Entity focused = getEntityLookedAt(cameraEntity);
-            if(focused instanceof LivingEntity && focused.isAlive()) {
+            if (focused instanceof LivingEntity && focused.isAlive()) {
                 renderHealthBar((LivingEntity) focused, matrices, partialTicks, camera, cameraEntity);
             }
-        }
-        else {
+        } else {
             Vec3d cameraPos = camera.getPos();
             final Frustum frustum;
-            if(capturedFrustum != null) {
+            if (capturedFrustum != null) {
                 frustum = capturedFrustum;
-            }
-            else {
+            } else {
                 frustum = new Frustum(matrices.peek().getModel(), projection);
                 frustum.setPosition(cameraPos.getX(), cameraPos.getY(), cameraPos.getZ());
             }
-            StreamSupport.stream(mc.world.getEntities().spliterator(), false).filter(entity -> entity instanceof LivingEntity && entity != cameraEntity && entity.isAlive() && entity.getPassengersDeep().isEmpty() && entity.shouldRender(cameraPos.getX(), cameraPos.getY(), cameraPos.getZ()) && (entity.ignoreCameraFrustum || frustum.isVisible(entity.getBoundingBox()))).map(LivingEntity.class::cast).forEach(entity -> renderHealthBar(entity, matrices, partialTicks, camera, cameraEntity));
+            StreamSupport.stream(mc.world.getEntities().spliterator(), false).filter(
+                    entity -> entity instanceof LivingEntity
+                            && entity != cameraEntity
+                            && entity.isAlive()
+                            && (Iterables.size(entity.getPassengersDeep()) == 0)
+                            && entity.shouldRender(cameraPos.getX(), cameraPos.getY(), cameraPos.getZ())
+                            && (entity.ignoreCameraFrustum || frustum.isVisible(entity.getBoundingBox()))
+            ).map(LivingEntity.class::cast).forEach(
+                    entity -> renderHealthBar(entity, matrices, partialTicks, camera, cameraEntity)
+            );
         }
     }
 
@@ -69,36 +76,35 @@ public class HealthBarRenderer {
         double distance = finalDistance;
         HitResult pos = raycast(e, finalDistance);
         Vec3d positionVector = e.getPos();
-        if(e instanceof PlayerEntity) {
+        if (e instanceof PlayerEntity) {
             positionVector = positionVector.add(0, e.getEyeHeight(e.getPose()), 0);
         }
-        if(pos != null) {
+        if (pos != null) {
             distance = pos.getPos().distanceTo(positionVector);
         }
         Vec3d lookVector = e.getRotationVector();
         Vec3d reachVector = positionVector.add(lookVector.x * finalDistance, lookVector.y * finalDistance, lookVector.z * finalDistance);
         Entity lookedEntity = null;
-        List<Entity> entitiesInBoundingBox = e.getEntityWorld().getEntities(e, e.getBoundingBox().stretch(lookVector.x * finalDistance, lookVector.y * finalDistance, lookVector.z * finalDistance).expand(1.0F));
+        List<Entity> entitiesInBoundingBox = e.getEntityWorld().getOtherEntities(e, e.getBoundingBox().stretch(lookVector.x * finalDistance, lookVector.y * finalDistance, lookVector.z * finalDistance).expand(1.0F));
         double minDistance = distance;
-        for(Entity entity : entitiesInBoundingBox) {
-            if(entity.collides()) {
+        for (Entity entity : entitiesInBoundingBox) {
+            if (entity.collides()) {
                 Box collisionBox = entity.getVisibilityBoundingBox();
-                Optional<Vec3d> interceptPosition = collisionBox.rayTrace(positionVector, reachVector);
-                if(collisionBox.contains(positionVector)) {
-                    if(0.0D < minDistance || minDistance == 0.0D) {
+                Optional<Vec3d> interceptPosition = collisionBox.raycast(positionVector, reachVector);
+                if (collisionBox.contains(positionVector)) {
+                    if (0.0D < minDistance || minDistance == 0.0D) {
                         lookedEntity = entity;
                         minDistance = 0.0D;
                     }
-                }
-                else if(interceptPosition.isPresent()) {
+                } else if (interceptPosition.isPresent()) {
                     double distanceToEntity = positionVector.distanceTo(interceptPosition.get());
-                    if(distanceToEntity < minDistance || minDistance == 0.0D) {
+                    if (distanceToEntity < minDistance || minDistance == 0.0D) {
                         lookedEntity = entity;
                         minDistance = distanceToEntity;
                     }
                 }
             }
-            if(lookedEntity != null && (minDistance < distance || pos == null)) {
+            if (lookedEntity != null && (minDistance < distance || pos == null)) {
                 foundEntity = lookedEntity;
             }
         }
@@ -114,56 +120,63 @@ public class HealthBarRenderer {
         Stack<LivingEntity> passengerStack = new Stack<>();
         LivingEntity entity = passedEntity;
         passengerStack.push(entity);
-        while(entity.getPrimaryPassenger() instanceof LivingEntity) {
+        while (entity.getPrimaryPassenger() instanceof LivingEntity) {
             entity = (LivingEntity) entity.getPrimaryPassenger();
             passengerStack.push(entity);
         }
         matrices.push();
-        while(!passengerStack.isEmpty()) {
+        while (!passengerStack.isEmpty()) {
             entity = passengerStack.pop();
-            if(!entity.isAlive()) continue;
+            if (!entity.isAlive()) continue;
             String idString = String.valueOf(Registry.ENTITY_TYPE.getId(entity.getType()));
             boolean boss = config.getBosses().contains(idString);
-            if(config.getBlacklist().contains(idString)) {
+            if (config.getBlacklist().contains(idString)) {
                 continue;
             }
             processing:
             {
                 float distance = passedEntity.distanceTo(viewPoint);
-                if(distance > config.getMaxDistance() || !passedEntity.canSee(viewPoint) || entity.isInvisible()) {
+                if (distance > config.getMaxDistance() || !passedEntity.canSee(viewPoint) || entity.isInvisible()) {
                     break processing;
                 }
-                if(boss && !config.canShowOnBosses()) {
+                if (boss && !config.canShowOnBosses()) {
                     break processing;
                 }
-                if(!config.canShowOnPlayers() && entity instanceof PlayerEntity) {
+                if (!config.canShowOnPlayers() && entity instanceof PlayerEntity) {
                     break processing;
                 }
-                if(entity.getMaxHealth() <= 0.0F) {
+                if (entity.getMaxHealth() <= 0.0F) {
                     break processing;
                 }
                 double x = passedEntity.prevX + (passedEntity.getX() - passedEntity.prevX) * partialTicks;
                 double y = passedEntity.prevY + (passedEntity.getY() - passedEntity.prevY) * partialTicks;
                 double z = passedEntity.prevZ + (passedEntity.getZ() - passedEntity.prevZ) * partialTicks;
 
-                EntityRenderDispatcher renderManager = MinecraftClient.getInstance().getEntityRenderManager();
+                EntityRenderDispatcher renderManager = MinecraftClient.getInstance().getEntityRenderDispatcher();
                 matrices.push();
                 {
-                    matrices.translate(x - renderManager.camera.getPos().x, y - renderManager.camera.getPos().y + passedEntity.getHeight() + config.getHeightAbove(), z - renderManager.camera.getPos().z);
-                    GL11.glNormal3f(0.0F, 1.0F, 0.0F);
-                    RenderSystem.disableLighting();
+                    matrices.translate(
+                            x - renderManager.camera.getPos().x,
+                            y - renderManager.camera.getPos().y
+                                    + passedEntity.getHeight()
+                                    + config.getHeightAbove(),
+                            z - renderManager.camera.getPos().z);
+                    RenderSystem.assertThread(RenderSystem::isOnRenderThread);
+//                    GL11.glNormal3f(0.0F, 1.0F, 0.0F);
+                    DiffuseLighting.disableGuiDepthLighting();
                     VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
                     ItemStack icon = RenderUtil.getIcon(entity, boss);
                     final int light = 0xF000F0;
-                    if(boss) {
-                        style.renderBossEntity(matrices, immediate, camera, config, entity, light, icon);
-                    }
-                    else {
+                    if (boss) {
+                        style.renderBossEntity(matrices, immediate, camera, config, entity, light
+                                , icon);
+                    } else {
                         style.renderEntity(matrices, immediate, camera, config, entity, light, icon);
                     }
                 }
                 matrices.pop();
-                matrices.translate(0.0D, -(config.getBackgroundHeight() + config.getBarHeight() + config.getBackgroundPadding()), 0.0D);
+                matrices.translate(0.0D,
+                        -(config.getBackgroundHeight() + config.getBarHeight() + config.getBackgroundPadding()), 0.0D);
             }
         }
         matrices.pop();
@@ -172,11 +185,11 @@ public class HealthBarRenderer {
     @Nullable
     private static HitResult raycast(Entity entity, double len) {
         Vec3d vec = new Vec3d(entity.getX(), entity.getY(), entity.getZ());
-        if(entity instanceof PlayerEntity) {
+        if (entity instanceof PlayerEntity) {
             vec = vec.add(new Vec3d(0, entity.getEyeHeight(entity.getPose()), 0));
         }
         Vec3d look = entity.getRotationVector();
-        if(look == null) {
+        if (look == null) {
             return null;
         }
         return raycast(entity, vec, look, len);
@@ -184,6 +197,7 @@ public class HealthBarRenderer {
 
     private static HitResult raycast(Entity entity, Vec3d origin, Vec3d ray, double len) {
         Vec3d next = origin.add(ray.normalize().multiply(len));
-        return entity.getEntityWorld().rayTrace(new RayTraceContext(origin, next, RayTraceContext.ShapeType.OUTLINE, RayTraceContext.FluidHandling.NONE, entity));
+        return entity.getEntityWorld().raycast(new RaycastContext(origin, next,
+                RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, entity));
     }
 }

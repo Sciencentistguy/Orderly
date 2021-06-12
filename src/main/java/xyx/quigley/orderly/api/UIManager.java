@@ -1,7 +1,7 @@
-package io.github.prospector.orderly.api;
+package xyx.quigley.orderly.api;
 
-import io.github.prospector.orderly.Orderly;
-import io.github.prospector.orderly.ui.DefaultUIStyle;
+import xyx.quigley.orderly.Orderly;
+import xyx.quigley.orderly.ui.DefaultUIStyle;
 import net.minecraft.util.Identifier;
 
 import java.util.Collections;

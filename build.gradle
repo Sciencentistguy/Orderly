@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
     id 'idea'
     id 'eclipse'
-    id 'fabric-loom' version '0.4-SNAPSHOT'
+    id 'fabric-loom' version '0.8-SNAPSHOT'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -12,6 +12,7 @@ targetCompatibility = JavaVersion.VERSION_1_8
 archivesBaseName = project.archive_name
 version = project.mod_version
 group = project.maven_group
+
 
 def ENV = System.getenv()
 def buildNumber = "+" + (ENV.BUILD_NUMBER ? ("build." + ENV.BUILD_NUMBER) : "custom")
@@ -22,6 +23,9 @@ version = "${modVersion}${buildMeta}-1.16"
 
 repositories {
     jcenter()
+    maven {
+        url "https://maven.terraformersmc.com"
+    }
 }
 
 dependencies {
@@ -32,11 +36,12 @@ dependencies {
     modImplementation "me.shedaniel.cloth:config-2:${project.clothconfig_version}"
     include "me.shedaniel.cloth:config-2:${project.clothconfig_version}"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-    modImplementation "io.github.prospector:modmenu:${project.mod_menu_version}"
+    modImplementation "com.terraformersmc:modmenu:${project.mod_menu_version}"
 
 }
 
 processResources {
+    duplicatesStrategy = DuplicatesStrategy.WARN
     inputs.property "version", project.version
 
     from(sourceSets.main.resources.srcDirs) {

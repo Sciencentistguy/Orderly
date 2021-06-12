@@ -1,11 +1,11 @@
-package io.github.prospector.orderly.config;
+package xyx.quigley.orderly.config;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
-import io.github.prospector.orderly.Orderly;
+import xyx.quigley.orderly.Orderly;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.BufferedReader;

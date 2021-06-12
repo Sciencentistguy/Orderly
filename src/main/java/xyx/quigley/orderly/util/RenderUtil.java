@@ -1,4 +1,4 @@
-package io.github.prospector.orderly.util;
+package xyx.quigley.orderly.util;
 
 import net.minecraft.entity.EntityGroup;
 import net.minecraft.entity.LivingEntity;

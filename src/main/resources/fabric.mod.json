@@ -13,10 +13,7 @@
     },
     "entrypoints": {
         "client": [
-            "io.github.prospector.orderly.Orderly"
-        ],
-        "modmenu": [
-            "io.github.prospector.orderly.config.OrderlyModMenuCompat"
+            "xyx.quigley.orderly.Orderly"
         ]
     },
     "contact": {
@@ -30,6 +27,12 @@
             "name": "UpcraftLP",
             "contact": {
                 "homepage": "https://twitter.com/UpcraftLP"
+            }
+        },
+        {
+            "name": "Sciencentistguy",
+            "contact": {
+                "homepage": "https://github.com/sciencentistguy"
             }
         }
     ],
