@@ -1,8 +1,8 @@
 package xyx.quigley.orderly.api;
 
+import net.minecraft.util.Identifier;
 import xyx.quigley.orderly.Orderly;
 import xyx.quigley.orderly.ui.DefaultUIStyle;
-import net.minecraft.util.Identifier;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,8 +17,12 @@ public final class UIManager {
     private static Identifier currentID;
 
     public static void registerStyle(Identifier identifier, Supplier<UIStyle> style) {
-        if(STYLES.putIfAbsent(identifier, style) != null) {
-            Orderly.getLogger().error("attempted to override UI style {}, this is not allowed!", identifier, new IllegalStateException(identifier + " registered twice"));
+        if (STYLES.putIfAbsent(identifier, style) != null) {
+            Orderly.getLogger().error(
+                    "attempted to override UI style {}, this is not allowed!",
+                    identifier,
+                    new IllegalStateException(identifier + " registered twice")
+            );
         }
     }
 
