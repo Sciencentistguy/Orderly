@@ -8,4 +8,4 @@ Functional minimalistic Unit Frames for the modern Minecrafter. A fork of Neat f
 
 A fork of [UpcraftLP/Orderly](https://github.com/UpcraftLP/Orderly)
 
-Available under the terms of the [CC-BY-NC-SA 3.0](./LICENCE)
+Available under the terms of the [CC-BY-NC-SA 3.0](./LICENSE)
